@@ -1,5 +1,7 @@
 use std::{error::Error, str::FromStr};
 
+mod output;
+
 fn main() -> Result<(), Box<dyn Error>> {
     println!("Hello, world!");
     let input = std::fs::read_to_string("input").unwrap();
@@ -23,7 +25,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     dbg!(&crossings);
 
-    todo!()
+    let squares = vec![];
+    std::fs::write("out.svg", output::format_svg(squares))?;
+    Ok(())
 }
 
 #[derive(Clone, Debug)]
