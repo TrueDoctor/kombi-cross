@@ -1,20 +1,19 @@
-const WIDTH: usize = 1;
+const WIDTH: i32 = 25;
+const MARGIN: i32 = 5;
 
 pub struct Square {
-    pub x: usize,
-    pub y: usize,
+    pub x: i32,
+    pub y: i32,
     pub char: String,
 }
 
 impl Square {
     fn format(&self) -> String {
-        format!("
-            <g>
+        format!("+
                 <rect x=\"{x}\" y=\"{y}\" width=\"{w}\" height=\"{w}\" stroke=\"black\" fill=\"none\" stroke-width=\"5\"/>
-                <text x=\"{x}\" y=\"{y}\">{c}</text>
-            </g>",
-            x = self.x  * WIDTH,
-            y = self.y * WIDTH,
+                <text x=\"{x}\" y=\"{y}\">{c}</text>",
+            x = self.x  * WIDTH + MARGIN,
+            y = self.y * WIDTH + MARGIN,
             w = WIDTH,
             c = self.char
         )
@@ -27,8 +26,8 @@ pub fn format_svg(boxes: Vec<Square>) -> String {
 
     let mut svg = format!(
         r#"<svg width="{}" height="{}" xmlns="http://www.w3.org/2000/svg">"#,
-        width * WIDTH,
-        height * WIDTH
+        width * WIDTH + 2 * MARGIN,
+        height * WIDTH + 2 * MARGIN
     );
 
     for square in boxes {
