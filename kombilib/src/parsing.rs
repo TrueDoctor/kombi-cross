@@ -87,3 +87,25 @@ pub(crate) fn umlaut(input: &str) -> String {
         .replace("ü", "ue")
         .replace("ß", "ss")
 }
+
+pub fn parse_file(
+    b: &str,
+    c: &str,
+) -> Result<(Vec<CrossBox>, Vec<Crossing>), Box<dyn Error + 'static>> {
+    let mut boxes: Vec<CrossBox> = vec![];
+    let mut crossings: Vec<Crossing> = vec![];
+    for line in b.lines() {
+        if line.starts_with("//") || line.is_empty() {
+            continue;
+        }
+        boxes.push(line.parse()?);
+    }
+    boxes.sort_unstable_by_key(|b| b.id);
+    for line in c.lines() {
+        if line.starts_with("//") || line.is_empty() {
+            continue;
+        }
+        crossings.push(line.parse()?);
+    }
+    Ok((boxes, crossings))
+}
