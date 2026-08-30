@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>kombi grid editor</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <h1>kombi</h1>
+  <label class="file">
+    <input type="file" id="file" accept="image/*,application/pdf" hidden>
+    Open image / PDF
+  </label>
+  <span id="pdfPages" hidden>
+    page <input type="number" id="pdfPage" min="1" value="1"> / <span id="pdfCount">1</span>
+  </span>
+  <span class="spacer"></span>
+  <span id="status">no file loaded</span>
+</header>
+
+<main>
+  <section id="stage">
+    <div id="canvasWrap">
+      <canvas id="cv"></canvas>
+    </div>
+    <p id="hint">Load a screenshot or PDF to begin.</p>
+  </section>
+
+  <aside id="panel">
+
+    <fieldset>
+      <legend>Mode</legend>
+      <label><input type="radio" name="mode" value="grid" checked> Grid — drag to move, wheel to resize</label>
+      <label><input type="radio" name="mode" value="draw"> Draw — drag a box along its cells</label>
+      <label><input type="radio" name="mode" value="select"> Select — click a box, Del removes</label>
+      <label><input type="radio" name="mode" value="calibrate"> Calibrate — drag corner to corner</label>
+    </fieldset>
+
+    <fieldset id="calibBox" hidden>
+      <legend>Calibration</legend>
+      <p class="note">Drag from the outer corner of one cell to the outer corner
+        of another, then say how many cells that rectangle spans.</p>
+      <div class="row">
+        <label>cols</label><input type="number" id="calCols" min="1" value="1">
+        <label>rows</label><input type="number" id="calRows" min="1" value="1">
+      </div>
+      <p class="note" id="calResult"></p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Grid</legend>
+      <div class="row"><label>cell</label><input type="number" id="cell" step="0.1" value="30"></div>
+      <div class="row"><label>x0</label><input type="number" id="x0" step="0.5" value="0"></div>
+      <div class="row"><label>y0</label><input type="number" id="y0" step="0.5" value="0"></div>
+      <div class="row"><label>zoom</label><input type="range" id="zoom" min="0.25" max="3" step="0.05" value="1"></div>
+      <label class="chk"><input type="checkbox" id="showGrid" checked> show grid lines</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Boxes <span id="boxCount">(0)</span></legend>
+      <div id="boxList"></div>
+      <div class="row btns">
+        <button id="renumber">Renumber 1..n</button>
+        <button id="clear">Clear all</button>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Crossings</legend>
+      <label class="chk"><input type="checkbox" id="autoCross" checked> derive from grid overlaps</label>
+      <p class="note" id="crossNote"></p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Output</legend>
+      <textarea id="out" spellcheck="false" readonly></textarea>
+      <div class="row btns">
+        <button id="copy">Copy</button>
+        <button id="download">Download “input”</button>
+      </div>
+    </fieldset>
+
+  </aside>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>

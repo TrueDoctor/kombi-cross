@@ -18,6 +18,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
         boxes.push(line.parse()?);
     }
+    boxes.sort_unstable_by_key(|b| b.id);
     for line in c.lines() {
         if line.starts_with("//") || line.is_empty() {
             continue;
@@ -25,7 +26,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         crossings.push(line.parse()?);
     }
 
-    dbg!(&crossings);
+    dbg!(&boxes);
 
     compute_layout(&mut boxes, &crossings);
 
@@ -33,20 +34,25 @@ fn main() -> Result<(), Box<dyn Error>> {
         println!("{:?}", b);
     }
 
-    let squares = boxes.iter().flat_map(|b| (0..b.len).map(move |i| {
-        let i = i as i32;
-        let (x, y) = match b.dir {
-            Direction::Left => (b.x - i, b.y),
-            Direction::Right => (b.x + i, b.y),
-            Direction::Up => (b.x, b.y - i),
-            Direction::Down => (b.x, b.y + i),
-        };
-        Square {
-            x: x,
-            y: y,
-            char: format!(""),
-        }
-    })).collect();
+    let squares = boxes
+        .iter()
+        .flat_map(|b| {
+            (0..b.len).map(move |i| {
+                let i = i as i32;
+                let (x, y) = match b.dir {
+                    Direction::Left => (b.x - i, b.y),
+                    Direction::Right => (b.x + i, b.y),
+                    Direction::Up => (b.x, b.y - i),
+                    Direction::Down => (b.x, b.y + i),
+                };
+                Square {
+                    x: x,
+                    y: y,
+                    char: format!(""),
+                }
+            })
+        })
+        .collect();
     std::fs::write("out.svg", output::format_svg(squares))?;
     Ok(())
 }
@@ -69,7 +75,13 @@ impl FromStr for CrossBox {
         let len = split.next().unwrap().parse().unwrap();
         let dir = split.next().unwrap().parse().unwrap();
 
-        Ok(CrossBox { x: 0, y: 0, id, len, dir })
+        Ok(CrossBox {
+            x: 0,
+            y: 0,
+            id,
+            len,
+            dir,
+        })
     }
 }
 
@@ -129,18 +141,41 @@ fn compute_layout(boxes: &mut Vec<CrossBox>, crossings: &[Crossing]) {
     while !box_queue.is_empty() {
         let box_id = box_queue.pop().unwrap();
         placed[box_id] = true;
-        println!("Placing box {} at ({}, {})", box_id, boxes[box_id - 1].x, boxes[box_id - 1].y);
-        crossings.iter()
+        println!(
+            "Placing box {} at ({}, {})",
+            box_id,
+            boxes[box_id - 1].x,
+            boxes[box_id - 1].y
+        );
+        crossings
+            .iter()
             .filter(|c| c.id_a == box_id || c.id_b == box_id)
             .for_each(|c| {
                 println!("Processing crossing {:?}", c);
                 let other_box_id = if c.id_a == box_id { c.id_b } else { c.id_a };
                 println!("Found crossing with box {}: {:?}", other_box_id, c);
                 if !placed[other_box_id] {
-                    println!("Placing box {} at ({}, {})", other_box_id, boxes[other_box_id - 1].x, boxes[other_box_id - 1].y);
-                    println!("At index: {}, is box {:?}", other_box_id - 1, &boxes[other_box_id - 1]);
-                    let (x, y) = compute_box_position(&boxes[box_id - 1], &boxes[other_box_id - 1], if c.id_a == box_id { c.c_a } else { c.c_b }, if c.id_a == box_id { c.c_b } else { c.c_a });
-                    println!("Placing box {} at ({}, {}) based on crossing {:?}", other_box_id, x, y, c);
+                    println!(
+                        "Placing box {} at ({}, {})",
+                        other_box_id,
+                        boxes[other_box_id - 1].x,
+                        boxes[other_box_id - 1].y
+                    );
+                    println!(
+                        "At index: {}, is box {:?}",
+                        other_box_id - 1,
+                        &boxes[other_box_id - 1]
+                    );
+                    let (x, y) = compute_box_position(
+                        &boxes[box_id - 1],
+                        &boxes[other_box_id - 1],
+                        if c.id_a == box_id { c.c_a } else { c.c_b },
+                        if c.id_a == box_id { c.c_b } else { c.c_a },
+                    );
+                    println!(
+                        "Placing box {} at ({}, {}) based on crossing {:?}",
+                        other_box_id, x, y, c
+                    );
                     boxes[other_box_id - 1].x = x;
                     boxes[other_box_id - 1].y = y;
                     placed[other_box_id] = true;
@@ -174,7 +209,10 @@ fn compute_box_position(box_a: &CrossBox, box_b: &CrossBox, c_a: i32, c_b: i32) 
         (Direction::Left, Direction::Down) => (box_a.x - c_a + 1, box_a.y - c_b + 1),
         (Direction::Right, Direction::Up) => (box_a.x + c_a - 1, box_a.y + c_b - 1),
         (Direction::Right, Direction::Down) => (box_a.x + c_a - 1, box_a.y - c_b + 1),
-        _ => panic!("Unsupported direction combination: {:?} and {:?}", box_a.dir, box_b.dir),
+        _ => panic!(
+            "Unsupported direction combination: {:?} and {:?}",
+            box_a.dir, box_b.dir
+        ),
     };
     (x, y)
 }

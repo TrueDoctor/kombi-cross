@@ -9,7 +9,7 @@ pub struct Square {
 
 impl Square {
     fn format(&self) -> String {
-        format!("+
+        format!("
                 <rect x=\"{x}\" y=\"{y}\" width=\"{w}\" height=\"{w}\" stroke=\"black\" fill=\"none\" stroke-width=\"5\"/>
                 <text x=\"{x}\" y=\"{y}\">{c}</text>",
             x = self.x  * WIDTH + MARGIN,
