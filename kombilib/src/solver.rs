@@ -63,6 +63,70 @@ impl Solver {
         solutions
     }
 
+    pub fn print_word_status(&self, state: &State) {
+        let mut word_len_groups: Vec<(Vec<&String>, Vec<String>, Vec<String>)> = Vec::new();
+        for (box_id, word_id) in state.assignments.iter().enumerate() {
+            let len = self.instance.boxes[box_id].len;
+            if word_len_groups.len() <= len {
+                word_len_groups.resize(len + 1, (vec![], vec![], vec![]));
+            }
+            if let Some(word_id) = word_id {
+                word_len_groups[len].0.push(&self.instance.words[word_id.get() as usize - 1]);
+            } else {
+                // word_len_groups[len].2.push("_ ".repeat(self.instance.boxes[box_id].len));
+                let hints = (0..len)
+                    .map(|i| {
+                        let crossing = self.box_crossings[box_id]
+                            .iter()
+                            .find(|c| c.c_a == i as i32)
+                            .map(|c| {
+                                if let Some(other_word) = state.assignments[c.id_b] {
+                                    self.instance.words[other_word.get() as usize - 1]
+                                        .chars()
+                                        .nth(c.c_b as usize)
+                                        .map(|c| c.to_string() + " ")
+                                } else {
+                                    None
+                                }
+                            });
+                        crossing.unwrap_or(Some("_ ".to_string()))
+                    })
+                    .collect::<Vec<_>>();
+                word_len_groups[len].2.push(
+                    hints
+                        .into_iter()
+                        .map(|c| c.unwrap_or("_ ".to_string()))
+                        .collect(),
+                );
+            }
+        }
+        for (word_id, word) in self.instance.words.iter().enumerate() {
+            let len = word.len();
+            if word_len_groups.len() <= len {
+                word_len_groups.resize(len + 1, (vec![], vec![], vec![]));
+            }
+            if state.placed_words & (1 << word_id) == 0 {
+                word_len_groups[len].1.push(word.clone());
+            }
+        }
+        println!("================================");
+        for (len, (placed, unplaced, empty)) in word_len_groups.iter().enumerate() {
+            if placed.is_empty() && unplaced.is_empty() && empty.is_empty() {
+                continue;
+            }
+            println!("\nWords of length {}:", len);
+            for word in placed {
+                println!("\x1b[9m{}\x1b[0m", word);
+            }
+            for word in unplaced {
+                println!("{}", word);
+            }
+            for word in empty {
+                println!("{}", word);
+            }
+        }
+    }
+
     pub fn consensus(&self, solutions: &[State]) -> State {
         let mut consensus = solutions[0].clone();
         for (i, block) in consensus.assignments.iter_mut().enumerate() {

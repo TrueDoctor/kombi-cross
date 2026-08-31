@@ -30,6 +30,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         "out.svg",
         output::format_svg(solver.format_state(&consensus)),
     )?;
+    solver.print_word_status(&consensus);
     Ok(())
 }
 
