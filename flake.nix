@@ -1,4 +1,6 @@
 {
+  description = "KombiCross - Solve Crossword jigsaws where the boxes to words mapping is not given";
+  
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
@@ -33,7 +35,6 @@
         ];
 
         runtimeLibs = with pkgs; [
-          wayland
           libxkbcommon
           vulkan-loader
         ];
