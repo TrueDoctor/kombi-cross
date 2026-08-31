@@ -1,15 +1,46 @@
+use crate::parsing;
+
 const WIDTH: i32 = 25;
 const MARGIN: i32 = 5;
 
+#[derive(Debug, Clone)]
 pub struct Square {
     pub x: i32,
     pub y: i32,
     pub char: String,
+    pub dir: Option<parsing::Direction>,
+    pub len: Option<usize>,
 }
 
 impl Square {
     fn format(&self) -> String {
-        format!("
+        println!("formatting square: {:?}", self);
+        if self.dir.is_some() && self.char == " " {
+            assert!(self.len.is_some());
+            return format!("
+                    <rect x=\"{x}\" y=\"{y}\" width=\"{w}\" height=\"{w}\" stroke=\"black\" fill=\"#fcfcfc\" stroke-width=\"5\"/>
+                    <text x=\"{cx_small}\" y=\"{cy_small}\" font-family=\"sans-serif\" font-size=\"{fs_small}\" text-anchor=\"middle\" dominant-baseline=\"middle\">{l}{d}</text>
+                    <text x=\"{cx}\" y=\"{cy}\" font-family=\"sans-serif\" font-weight=\"bold\" font-size=\"{fs}\" text-anchor=\"middle\" dominant-baseline=\"middle\">{c}</text>",
+                x = self.x  * WIDTH + MARGIN,
+                y = self.y * WIDTH + MARGIN,
+                cx = self.x * WIDTH + MARGIN + WIDTH / 2,
+                cy = self.y * WIDTH + MARGIN + WIDTH * 3 / 5,
+                w = WIDTH,
+                fs = WIDTH * 3 / 5,
+                c = self.char,
+                cx_small = self.x * WIDTH + MARGIN + 8,
+                cy_small = self.y * WIDTH + MARGIN + 6,
+                fs_small = WIDTH / 4,
+                l = self.len.unwrap(),
+                d = match self.dir.as_ref().unwrap() {
+                    parsing::Direction::Right => "▶",
+                    parsing::Direction::Left => "◀",
+                    parsing::Direction::Up => "▲",
+                    parsing::Direction::Down => "▼",
+                })
+                ;
+        }
+        return format!("
                 <rect x=\"{x}\" y=\"{y}\" width=\"{w}\" height=\"{w}\" stroke=\"black\" fill=\"#fcfcfc\" stroke-width=\"5\"/>
                 <text x=\"{cx}\" y=\"{cy}\" font-family=\"sans-serif\" font-weight=\"bold\" font-size=\"{fs}\" text-anchor=\"middle\" dominant-baseline=\"middle\">{c}</text>",
             x = self.x  * WIDTH + MARGIN,
@@ -18,8 +49,7 @@ impl Square {
             cy = self.y * WIDTH + MARGIN + WIDTH * 3 / 5,
             w = WIDTH,
             fs = WIDTH * 3 / 5,
-            c = self.char
-        )
+            c = self.char)
     }
 }
 

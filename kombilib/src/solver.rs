@@ -169,6 +169,8 @@ impl Solver {
                         x,
                         y,
                         char: char.to_string().to_ascii_uppercase(),
+                        dir: (if i == 0 { Some(b.dir.clone()) } else { None }),
+                        len: (if i == 0 { Some(b.len) } else { None }),
                     }
                 })
             })
