@@ -14,7 +14,6 @@ pub struct Square {
 
 impl Square {
     fn format(&self) -> String {
-        println!("formatting square: {:?}", self);
         if self.dir.is_some() && self.char == " " {
             assert!(self.len.is_some());
             return format!("

@@ -8,7 +8,6 @@ mod parsing;
 mod solver;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    println!("Hello, world!");
     let input = std::fs::read_to_string("input").unwrap();
     let (b, c) = input.split_once("---").unwrap();
     let words = std::fs::read_to_string("words").unwrap();
@@ -17,10 +16,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     let (mut boxes, crossings) = parsing::parse_file(b, c)?;
 
     layout::compute_layout(&mut boxes, &crossings);
-
-    // for b in &boxes {
-    //     println!("{:?}", b);
-    // }
 
     let instance = Instance {
         boxes,
