@@ -16,7 +16,7 @@ impl FromStr for CrossBox {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut split = s.split_ascii_whitespace();
-        let id = split.next().unwrap().parse().unwrap();
+        let id: usize = split.next().unwrap().parse::<usize>().unwrap() - 1;
         let len = split.next().unwrap().parse().unwrap();
         let dir = split.next().unwrap().parse().unwrap();
 
@@ -52,7 +52,7 @@ impl FromStr for Direction {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Copy)]
 pub(crate) struct Crossing {
     pub(crate) id_a: usize,
     pub(crate) id_b: usize,
@@ -60,15 +60,26 @@ pub(crate) struct Crossing {
     pub(crate) c_b: i32,
 }
 
+impl Crossing {
+    pub fn reverse(self) -> Self {
+        Self {
+            id_a: self.id_b,
+            id_b: self.id_a,
+            c_a: self.c_b,
+            c_b: self.c_a,
+        }
+    }
+}
+
 impl FromStr for Crossing {
     type Err = Box<dyn Error>;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut split = s.split_ascii_whitespace();
-        let id_a = split.next().unwrap().parse().unwrap();
-        let id_b = split.next().unwrap().parse().unwrap();
-        let c_a = split.next().unwrap().parse().unwrap();
-        let c_b = split.next().unwrap().parse().unwrap();
+        let id_a = split.next().unwrap().parse::<usize>().unwrap() - 1;
+        let id_b = split.next().unwrap().parse::<usize>().unwrap() - 1;
+        let c_a = split.next().unwrap().parse::<i32>().unwrap() - 1;
+        let c_b = split.next().unwrap().parse::<i32>().unwrap() - 1;
 
         Ok(Crossing {
             id_a,

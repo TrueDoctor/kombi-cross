@@ -18,9 +18,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     layout::compute_layout(&mut boxes, &crossings);
 
-    for b in &boxes {
-        println!("{:?}", b);
-    }
+    // for b in &boxes {
+    //     println!("{:?}", b);
+    // }
 
     let instance = Instance {
         boxes,
@@ -28,6 +28,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         words,
     };
     let squares = solver::solve(&instance);
+    let solver = solver::Solver::new(instance);
+    let solutions = solver.solve();
+    println!("found {} solutions", solutions.len());
     std::fs::write("out.svg", output::format_svg(squares))?;
     Ok(())
 }
