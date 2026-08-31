@@ -4,10 +4,6 @@ use crate::output::Square;
 
 use super::Instance;
 
-pub(crate) fn solve(instance: &Instance) -> Vec<Square> {
-    generate_squares(&instance.boxes)
-}
-
 #[derive(Clone, Debug)]
 pub struct State {
     assignments: Vec<Option<std::num::NonZeroU8>>,
@@ -141,31 +137,36 @@ impl Solver {
         }
         min_i
     }
+
+    pub fn format_state(&self, state: &State) -> Vec<Square> {
+        self.instance
+            .boxes
+            .iter()
+            .enumerate()
+            .flat_map(|(b_i, b)| {
+                (0..b.len).map(move |i| {
+                    let char = state.assignments[b_i]
+                        .and_then(|w| self.instance.words[w.get() as usize - 1].chars().nth(i))
+                        .unwrap_or(' ');
+                    let i = i as i32;
+                    let (x, y) = match b.dir {
+                        parsing::Direction::Left => (b.x - i, b.y),
+                        parsing::Direction::Right => (b.x + i, b.y),
+                        parsing::Direction::Up => (b.x, b.y - i),
+                        parsing::Direction::Down => (b.x, b.y + i),
+                    };
+                    Square {
+                        x,
+                        y,
+                        char: char.to_string().to_ascii_uppercase(),
+                    }
+                })
+            })
+            .collect()
+    }
 }
 
 fn options(n: usize, k: usize) -> usize {
     debug_assert!(k <= n);
     ((n + 1 - k)..=n).product()
-}
-
-pub(crate) fn generate_squares(boxes: &[parsing::CrossBox]) -> Vec<Square> {
-    boxes
-        .iter()
-        .flat_map(|b| {
-            (0..b.len).map(move |i| {
-                let i = i as i32;
-                let (x, y) = match b.dir {
-                    parsing::Direction::Left => (b.x - i, b.y),
-                    parsing::Direction::Right => (b.x + i, b.y),
-                    parsing::Direction::Up => (b.x, b.y - i),
-                    parsing::Direction::Down => (b.x, b.y + i),
-                };
-                Square {
-                    x,
-                    y,
-                    char: String::new(),
-                }
-            })
-        })
-        .collect()
 }

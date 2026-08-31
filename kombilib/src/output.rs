@@ -11,10 +11,13 @@ impl Square {
     fn format(&self) -> String {
         format!("
                 <rect x=\"{x}\" y=\"{y}\" width=\"{w}\" height=\"{w}\" stroke=\"black\" fill=\"none\" stroke-width=\"5\"/>
-                <text x=\"{x}\" y=\"{y}\">{c}</text>",
+                <text x=\"{cx}\" y=\"{cy}\" font-family=\"sans-serif\" font-size=\"{fs}\" text-anchor=\"middle\" dominant-baseline=\"central\">{c}</text>",
             x = self.x  * WIDTH + MARGIN,
             y = self.y * WIDTH + MARGIN,
+            cx = self.x * WIDTH + MARGIN + WIDTH / 2,
+            cy = self.y * WIDTH + MARGIN + WIDTH * 3 / 4,
             w = WIDTH,
+            fs = WIDTH * 3 / 4,
             c = self.char
         )
     }

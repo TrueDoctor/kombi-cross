@@ -27,11 +27,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         crossings,
         words,
     };
-    let squares = solver::solve(&instance);
     let solver = solver::Solver::new(instance);
     let solutions = solver.solve();
     println!("found {} solutions", solutions.len());
-    std::fs::write("out.svg", output::format_svg(squares))?;
+    std::fs::write(
+        "out.svg",
+        output::format_svg(solver.format_state(&solutions[0])),
+    )?;
     Ok(())
 }
 
