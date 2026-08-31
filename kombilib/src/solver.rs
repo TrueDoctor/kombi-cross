@@ -63,6 +63,16 @@ impl Solver {
         solutions
     }
 
+    pub fn consensus(&self, solutions: &[State]) -> State {
+        let mut consensus = solutions[0].clone();
+        for (i, block) in consensus.assignments.iter_mut().enumerate() {
+            if solutions.iter().any(|s| s.assignments[i] != *block) {
+                *block = None;
+            }
+        }
+        consensus
+    }
+
     pub fn next_states(&self, state: &State, queue: &mut Vec<State>) {
         let Some(group) = self.best_group(state) else {
             return;

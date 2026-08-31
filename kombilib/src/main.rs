@@ -30,9 +30,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     let solver = solver::Solver::new(instance);
     let solutions = solver.solve();
     println!("found {} solutions", solutions.len());
+    let consensus = solver.consensus(&solutions);
     std::fs::write(
         "out.svg",
-        output::format_svg(solver.format_state(&solutions[0])),
+        output::format_svg(solver.format_state(&consensus)),
     )?;
     Ok(())
 }
