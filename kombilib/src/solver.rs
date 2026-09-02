@@ -105,16 +105,16 @@ impl Solver {
             if word_len_groups.len() <= len {
                 word_len_groups.resize(len + 1, (vec![], vec![], vec![]));
             }
-            if state.placed_words & (1 << word_id) == 0 {
+            if !state.assignments.iter().any(|w| w.map(|w| w.get() as usize - 1) == Some(word_id)) {
                 word_len_groups[len].1.push(word.clone());
             }
         }
-        println!("================================");
+        println!("\n================================");
         for (len, (placed, unplaced, empty)) in word_len_groups.iter().enumerate() {
             if placed.is_empty() && unplaced.is_empty() && empty.is_empty() {
                 continue;
             }
-            println!("\nWords of length {}:", len);
+            println!("\n[{}/{}] Words of length {}:", placed.len() + unplaced.len(), placed.len() + empty.len(), len);
             for word in placed {
                 println!("\x1b[9m{}\x1b[0m", word);
             }
@@ -125,6 +125,30 @@ impl Solver {
                 println!("{}", word);
             }
         }
+    }
+
+    pub fn print_solution_status(&self, solution: &State) {
+        let mut solution_cells = self.instance.solution_cells.clone();
+        solution_cells.sort_unstable();
+        println!("\n================================\n");
+        let mut chars = Vec::new();
+        for (box_id, cell_idx) in solution_cells {
+            if solution.assignments[box_id as usize - 1].is_none() {
+                chars.push('_');
+                chars.push(' ');
+                continue;
+            }
+            let word_id = solution.assignments[box_id as usize - 1];
+            let c = word_id.map(|w| {
+                self.instance.words[w.get() as usize - 1]
+                    .chars()
+                    .nth(cell_idx as usize - 1)
+                    .unwrap_or('_')
+            });
+            chars.push(c.unwrap_or('_'));
+            chars.push(' ');
+        }
+        println!("Solution: {}\n\n", chars.into_iter().collect::<String>());
     }
 
     pub fn consensus(&self, solutions: &[State]) -> State {

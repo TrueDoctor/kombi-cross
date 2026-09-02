@@ -26,7 +26,7 @@ const state = {
   showGrid: true,
   mode: 'grid',
   boxes: [],             // { id, col, row, dir, len }
-  nextId: 1,
+  solutionCells: [],     // { box_id, cell_idx }
   selected: null,        // box id
   drag: null,            // in-flight interaction
 };
@@ -153,6 +153,9 @@ function serialize() {
       lines.push(`${c.id_a} ${c.id_b} ${c.c_a} ${c.c_b}`);
     }
   }
+  lines.push('---');
+  lines.push('// solution: box_id cell_idx');
+  for (const s of state.solutionCells) lines.push(`${s.box_id} ${s.cell_idx}`);
   return lines.join('\n') + '\n';
 }
 
@@ -213,6 +216,16 @@ function render() {
     ctx.beginPath();
     ctx.arc(x + g.cell / 2, y + g.cell / 2, Math.max(2, g.cell * 0.14), 0, Math.PI * 2);
     ctx.fill();
+  }
+
+  // Fill Solution cells with a different color so they can be distinguished from derived crossings.
+  ctx.fillStyle = 'rgba(0, 255, 13, 0.55)';
+  for (const s of state.solutionCells) {
+    const box = state.boxes.find((b) => b.id === s.box_id);
+    if (!box) continue;
+    const [col, row] = cellsOf(box)[s.cell_idx - 1];
+    const [x, y] = [g.x0 + col * g.cell, g.y0 + row * g.cell];
+    ctx.fillRect(x, y, g.cell, g.cell);
   }
   ctx.restore();
 }
@@ -280,6 +293,20 @@ function syncPanel() {
     list.append(row);
   }
 
+  const solList = $('solutionList');
+  solList.innerHTML = '';
+  for (const s of state.solutionCells) {
+    const row = document.createElement('div');
+    row.className = 'solutionRow';
+    const text = document.createElement('span');
+    text.textContent = `box ${s.box_id}, cell ${s.cell_idx}`;
+    const del = document.createElement('button');
+    del.className = 'del'; del.textContent = '✕';
+    del.onclick = () => { state.solutionCells = state.solutionCells.filter((x) => x !== s); refresh(); };
+    row.append(text, del);
+    solList.append(row);
+  }
+
   const crossings = deriveCrossings();
   const dupes = new Set();
   for (const b of state.boxes) {
@@ -307,6 +334,23 @@ cv.addEventListener('mousedown', (e) => {
     state.drag = { kind: 'draw', start: pointToCell(x, y), preview: null };
   } else if (state.mode === 'calibrate') {
     state.drag = { kind: 'calib', x, y, rect: null };
+  } else if (state.mode === 'draw_solution') {
+    const cell = pointToCell(x, y);
+    const hits_box = state.boxes.find((b) =>
+      cellsOf(b).some(([c, r]) => c === cell[0] && r === cell[1]));
+    if (hits_box) {
+      const cellIdx = cellsOf(hits_box).findIndex(([c, r]) => c === cell[0] && r === cell[1]);
+      const solutionCell = { box_id: hits_box.id, cell_idx: cellIdx + 1 };
+      const existing = state.solutionCells.find((s) =>
+        s.box_id === solutionCell.box_id && s.cell_idx === solutionCell.cell_idx);
+      if (existing) {
+        state.solutionCells = state.solutionCells.filter((s) =>
+          !(s.box_id === existing.box_id && s.cell_idx === existing.cell_idx));
+      } else {
+        state.solutionCells.push(solutionCell);
+      }
+    }
+    refresh();
   } else {
     const cell = pointToCell(x, y);
     const hit = state.boxes.find((b) =>
@@ -451,6 +495,12 @@ $('download').onclick = () => {
   URL.revokeObjectURL(url);
 };
 
+$('reset').onclick = () => {
+  if (!confirm('This will delete all stored data. Are you sure?')) return;
+  localStorage.removeItem('kombi-editor');
+  location.reload();
+}
+
 function flash(msg) {
   $('status').textContent = msg;
   clearTimeout(flash.t);
@@ -530,7 +580,7 @@ const KEY = 'kombi-editor';
 function save() {
   try {
     localStorage.setItem(KEY, JSON.stringify({
-      grid: state.grid, boxes: state.boxes, nextId: state.nextId, calibRect: state.calibRect,
+      grid: state.grid, boxes: state.boxes, solutionCells: state.solutionCells, nextId: state.nextId, calibRect: state.calibRect, mode: state.mode,
     }));
   } catch { /* quota — not worth failing the edit over */ }
 }
@@ -541,8 +591,10 @@ function restore() {
     if (!s) return;
     Object.assign(state.grid, s.grid || {});
     state.boxes = s.boxes || [];
+    state.solutionCells = s.solutionCells || [];
     state.nextId = s.nextId || state.boxes.length + 1;
     state.calibRect = s.calibRect || null;
+    state.mode = s.mode || 'grid';
   } catch { /* ignore corrupt state */ }
 }
 

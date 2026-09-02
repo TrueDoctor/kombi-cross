@@ -37,6 +37,7 @@
       <label><input type="radio" name="mode" value="draw"> Draw — drag a box along its cells</label>
       <label><input type="radio" name="mode" value="select"> Select — click a box, Del removes</label>
       <label><input type="radio" name="mode" value="calibrate"> Calibrate — drag corner to corner</label>
+      <label><input type="radio" name="mode" value="draw_solution"> Solution — click a cell to select it</label>
     </fieldset>
 
     <fieldset id="calibBox" hidden>
@@ -60,6 +61,14 @@
     </fieldset>
 
     <fieldset>
+      <legend>Solution Cells<span id="solCount">(0)</span></legend>
+      <div id="solutionList"></div>
+      <div class="row btns">
+        <button id="clearSol">Clear all</button>
+      </div>
+    </fieldset>
+
+    <fieldset>
       <legend>Boxes <span id="boxCount">(0)</span></legend>
       <div id="boxList"></div>
       <div class="row btns">
@@ -80,6 +89,14 @@
       <div class="row btns">
         <button id="copy">Copy</button>
         <button id="download">Download “input”</button>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Full Reset</legend>
+      <p class="note">This will delete all stored data.</p>
+      <div class="row btns">
+        <button id="reset">Reset</button>
       </div>
     </fieldset>
 

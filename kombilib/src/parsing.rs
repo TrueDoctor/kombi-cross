@@ -102,9 +102,11 @@ pub(crate) fn umlaut(input: &str) -> String {
 pub fn parse_file(
     b: &str,
     c: &str,
-) -> Result<(Vec<CrossBox>, Vec<Crossing>), Box<dyn Error + 'static>> {
+    s: &str,
+) -> Result<(Vec<CrossBox>, Vec<Crossing>, Vec<(u32, u32)>), Box<dyn Error + 'static>> {
     let mut boxes: Vec<CrossBox> = vec![];
     let mut crossings: Vec<Crossing> = vec![];
+    let mut solution_cells: Vec<(u32, u32)> = vec![];
     for line in b.lines() {
         if line.starts_with("//") || line.is_empty() {
             continue;
@@ -118,5 +120,14 @@ pub fn parse_file(
         }
         crossings.push(line.parse()?);
     }
-    Ok((boxes, crossings))
+    for line in s.lines() {
+        if line.starts_with("//") || line.is_empty() {
+            continue;
+        }
+        let mut split = line.split_ascii_whitespace();
+        let box_id: u32 = split.next().unwrap().parse::<u32>().unwrap();
+        let cell_idx: u32 = split.next().unwrap().parse::<u32>().unwrap();
+        solution_cells.push((box_id, cell_idx));
+    }
+    Ok((boxes, crossings, solution_cells))
 }
